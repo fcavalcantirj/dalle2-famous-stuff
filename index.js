@@ -74,9 +74,9 @@ const tweet = async (book, imageUrl) => {
 
                     // console.log('You successfully uploaded media');
 
-                    let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year} #dalle2 #dalle #openai`
+                    let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai`
 
-                    if (!twitterText.txt.parseTweet(tweetText).valid) {
+                    if (!twitterText.parseTweet(tweetText).valid) {
                         fixed = fixTweet(tweetText)
                         tweetText = fixed
                     }
