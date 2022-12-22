@@ -50,6 +50,8 @@ const bookTitleToDescription = async (bookTitle) => {
       presence_penalty: 0,
     });
 
+    // console.log(response.data.choices[0].text)
+
     return response;
 }
 
@@ -153,7 +155,7 @@ const main = async () => {
 
     let description = await bookTitleToDescription(book.title);
 
-    let url = await generateImage(description);
+    let url = await generateImage(description.data.choices[0].text);
     // console.log(`url=[${url}]`)
     await tweet(book, url)
 }
