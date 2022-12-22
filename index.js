@@ -38,7 +38,7 @@ config.newClient = function (subdomain = 'api') {
 const uploadClient = config.newClient('upload');
 
 
-const bookTitleToDescription = async (bookTitle) {
+const bookTitleToDescription = async (bookTitle) => {
 
     const response = await openai.createCompletion({
       model: "text-davinci-003",
