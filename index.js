@@ -77,7 +77,7 @@ const tweet = async (book, imageUrl) => {
                     let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai`
 
                     if (!twitterText.parseTweet(tweetText).valid) {
-                        fixed = fixTweet(tweetText)
+                        fixed = fixTweet(tweetText, book)
                         tweetText = fixed
                     }
 
