@@ -55,7 +55,7 @@ const tweet = async (book, imageUrl) => {
                 // console.log('You successfully uploaded media');
 
                 var media_id = media.media_id_string;
-                client.post('statuses/update', { status: `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year}`, media_ids: media_id })
+                client.post('statuses/update', { status: `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year} #dalle2 #dalle #openai`, media_ids: media_id })
                     .then(tweet => {
 
                     // console.log('Your image tweet is posted successfully');
