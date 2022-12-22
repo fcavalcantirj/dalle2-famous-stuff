@@ -229,7 +229,7 @@ bot.on('message', async (msg) => {
         }
 
         if (username == 'TrippyPlaces') {
-            console.log(`TrippyPlaces not handled prompt=[${msg.reply_to_message.text}]`)
+            console.log(`TrippyPlaces not handled`)
             return
         }
 
