@@ -1,6 +1,7 @@
 const { Configuration, OpenAIApi } = require("openai");
 const TelegramBot = require('node-telegram-bot-api');
 const nodeCron = require("node-cron");
+const twitterText = require('twitter-text')
 
 const request = require('request').defaults({ encoding: null });
 
@@ -37,6 +38,25 @@ config.newClient = function (subdomain = 'api') {
 const uploadClient = config.newClient('upload');
 
 
+let hashtags = ['#dalle2', '#dalle', '#openai']
+
+const fixTweet = (text, book) => {
+    try {
+        let author = `- author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year} #dalle2 #dalle #openai`
+        let delta = 240 - author.replace(/[^a-z]/gi, "").length;
+        let bookTitle = book.title;
+        let fixed = bookTitle.substring(0, (delta - 3)) + '...'
+        let fixedTweet = fixed += ' ' + author;
+        let length = fixedTweet.replace(/[^a-z]/gi, "").length
+        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
+        return fixedTweet;
+    } catch(err) {
+        console.log(err)
+        return text
+    }
+}
+
+
 const tweet = async (book, imageUrl) => {
 
     // client.post('statuses/update', { status: `Book: ${title} - Image: ${imageUrl}` }).then(result => {
@@ -52,18 +72,25 @@ const tweet = async (book, imageUrl) => {
             uploadClient.post('media/upload', { media_data: Buffer.from(body).toString('base64') })
                 .then(media => {
 
-                // console.log('You successfully uploaded media');
+                    // console.log('You successfully uploaded media');
 
-                var media_id = media.media_id_string;
-                client.post('statuses/update', { status: `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year} #dalle2 #dalle #openai`, media_ids: media_id })
-                    .then(tweet => {
+                    let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year} #dalle2 #dalle #openai`
 
-                    // console.log('Your image tweet is posted successfully');
+                    if (!twitterText.txt.parseTweet(tweetText).valid) {
+                        fixed = fixTweet(tweetText)
+                        tweetText = fixed
+                    }
 
-                    console.log('successfully tweeted this : "' + tweet.text + '"');
+                    var media_id = media.media_id_string;
+                    client.post('statuses/update', { status: tweetText, media_ids: media_id })
+                        .then(tweet => {
+
+                            // console.log('Your image tweet is posted successfully');
+
+                            console.log('successfully tweeted this : "' + tweet.text + '"');
 
 
-                }).catch(console.error);
+                    }).catch(console.error);
 
             }).catch(console.error);
         }
