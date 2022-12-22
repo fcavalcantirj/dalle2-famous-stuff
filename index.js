@@ -38,11 +38,11 @@ config.newClient = function (subdomain = 'api') {
 const uploadClient = config.newClient('upload');
 
 
-const bookTitleToDescription = async (bookTitle) => {
+const bookTitleToDescription = async (book) => {
 
     const response = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: `I want to generate a very good description of a book cover based on the book title ${bookTitle}`,
+      prompt: `I want to generate a very good description of a book cover based on the book title ${book.title}, author ${book.authors[0].name}`,
       temperature: 0,
       max_tokens: 125,
       top_p: 1,
