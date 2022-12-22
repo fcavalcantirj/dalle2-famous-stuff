@@ -160,7 +160,7 @@ const main = async () => {
     await tweet(book, url)
 }
 
-const job = nodeCron.schedule("0 */10 * * * *", () => {
+const job = nodeCron.schedule("0 */15 * * * *", () => {
     try {
         main()
         console.log(new Date().toLocaleString());
