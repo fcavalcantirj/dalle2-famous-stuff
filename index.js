@@ -113,9 +113,13 @@ const main = async () => {
     await tweet(book, url)
 }
 
-const job = nodeCron.schedule("0 */15 * * * *", () => {
-    main()
-    console.log(new Date().toLocaleString());
+const job = nodeCron.schedule("0 */7 * * * *", () => {
+    try {
+        main()
+        console.log(new Date().toLocaleString());
+    } catch(err) {
+        console.log(err)
+    }
 });
 
 
