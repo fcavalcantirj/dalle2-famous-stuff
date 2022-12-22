@@ -42,7 +42,7 @@ let hashtags = ['#dalle2', '#dalle', '#openai']
 
 const fixTweet = (text, book) => {
     try {
-        let author = `- author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year} #dalle2 #dalle #openai`
+        let author = `- author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai`
         let delta = 240 - author.replace(/[^a-z]/gi, "").length;
         let bookTitle = book.title;
         let fixed = bookTitle.substring(0, (delta - 3)) + '...'
