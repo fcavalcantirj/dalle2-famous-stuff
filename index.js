@@ -228,6 +228,11 @@ bot.on('message', async (msg) => {
             username = `${msg.from.first_name} ${msg.from.last_name}`
         }
 
+        if (username == 'TrippyPlaces') {
+            console.log(`TrippyPlaces not handled prompt=[${msg.reply_to_message.text}]`)
+            return
+        }
+
         let searchTerm = msg.text;
 
         // if inside group and @mention...
