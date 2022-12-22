@@ -38,6 +38,21 @@ config.newClient = function (subdomain = 'api') {
 const uploadClient = config.newClient('upload');
 
 
+const bookTitleToDescription = async (bookTitle) {
+
+    const response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: `I want to generate a very good description of a book cover based on the book title ${bookTitle}`,
+      temperature: 0,
+      max_tokens: 125,
+      top_p: 1,
+      frequency_penalty: 0.2,
+      presence_penalty: 0,
+    });
+
+    return response;
+}
+
 let hashtags = ['#dalle2', '#dalle', '#openai']
 
 const fixTweet = (text, book) => {
@@ -135,7 +150,10 @@ const main = async () => {
     // generateImage()
     let book = await generateRandomBook()
     console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
-    let url = await generateImage(book.title);
+
+    let description = await bookTitleToDescription(book.title);
+
+    let url = await generateImage(description);
     // console.log(`url=[${url}]`)
     await tweet(book, url)
 }
