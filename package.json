@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/fcavalcantirj/dalle2-famous-stuff#readme",
   "dependencies": {
+    "crypto": "^1.0.1",
     "got": "^12.5.3",
     "node-cron": "^3.0.2",
     "node-fetch": "^3.3.0",

@@ -14,8 +14,11 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // https://api.nytimes.com/svc/books/v3/lists/full-overview.json?api-key=amKvmaWADFUgzl4EEjHNaZauh7E6c4Sm
-let nytimeskey = process.env.NY_TIMES_KEY
-let nytimeskeySecret = process.env.NY_TIMES_KEY_SECRET
+const nytimesKey = process.env.NY_TIMES_KEY
+const nytimesKeySecret = process.env.NY_TIMES_KEY_SECRET
+
+const marvelKey = process.env.MARVEL_KEY
+const marvelKeySecret = process.env.MARVEL_KEY_SECRET
 
 const config = {  
   consumer_key: process.env.TWITTER_CONSUMER_API_KEY,  
@@ -39,10 +42,10 @@ const uploadClient = config.newClient('upload');
 
 const openaiTextModels = ['text-ada-001', 'text-babbage-001', 'text-curie-001', 'text-davinci-003']
 const modelToHashtag = new Map([
-  ['text-ada-001', 'textada001'],
-  ['text-babbage-001', 'textbabbage001'],
-  ['text-curie-001', 'textcurie001'],
-  ['text-davinci-003', 'textdavinci003'],
+  ['text-ada-001', '#textada001'],
+  ['text-babbage-001', '#textbabbage001'],
+  ['text-curie-001', '#textcurie001'],
+  ['text-davinci-003', '#textdavinci003'],
 ]);
 
 const bookTitleToDescription = async (book, model) => {
@@ -135,6 +138,16 @@ const generateRandomModel = ()  => {
     const rndInt = Math.floor(Math.random() * (3 - 0)) + 0;
     const model = openaiTextModels[rndInt];
     return model;
+}
+
+
+const generateRandomMarvelCharacter = async () => {
+
+    const url = `http://gateway.marvel.com/v1/public/comics?apikey=${marvelKey}`
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log(data)
+
 }
 
 const generateRandomBook = async () => {
