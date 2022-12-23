@@ -153,7 +153,7 @@ const main = async () => {
     let book = await generateRandomBook()
     console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
 
-    let description = await bookTitleToDescription(book.title);
+    let description = await bookTitleToDescription(book);
 
     let url = await generateImage(description.data.choices[0].text);
     // console.log(`url=[${url}]`)
