@@ -37,18 +37,20 @@ config.newClient = function (subdomain = 'api') {
 }
 const uploadClient = config.newClient('upload');
 
+const openaiTextModels = ['text-ada-001', 'text-babbage-001', 'text-curie-001', 'text-davinci-003']
+const modelToHashtag = new Map([
+  ['text-ada-001', 'textada001'],
+  ['text-babbage-001', 'textbabbage001'],
+  ['text-curie-001', 'textcurie001'],
+  ['text-davinci-003', 'textdavinci003'],
+]);
 
-const bookTitleToDescription = async (book) => {
+const bookTitleToDescription = async (book, model) => {
 
-    let prompt = `I want to generate a very good description of a book cover based on the book title ${book.title}`
-
-    if (book.authors && book.authors.length >= 0) {
-        prompt += `, author ${book.authors[0].name}`
-
-    }
+    let prompt = `I want to generate a very good description of a book cover based on the book title ${book.title}, author ${getBookAuthor(book)}`
 
     const response = await openai.createCompletion({
-      model: "text-ada-001",
+      model: model,
       prompt: prompt,
       temperature: 0,
       max_tokens: 125,
@@ -62,11 +64,25 @@ const bookTitleToDescription = async (book) => {
     return response;
 }
 
-let hashtags = ['#dalle2', '#dalle', '#openai']
+const getAuthorBirthYear = (book) => {
+   if (book.authors && book.authors.length >= 0 && book.authors[0].birth_year) {
+        return book.authors[0].birth_year
+   } else {
+    return 'unknown'
+   } 
+}
+
+const getBookAuthor = (book) => {
+   if (book.authors && book.authors.length >= 0) {
+        return book.authors[0].name
+   } else {
+    return 'unknown'
+   } 
+}
 
 const fixTweet = (text, book) => {
     try {
-        let author = `- author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai #textada001`
+        let author = `- author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${hashtags}`
         let delta = 240 - author.replace(/[^a-z]/gi, "").length;
         let bookTitle = book.title;
         let fixed = bookTitle.substring(0, (delta - 3)) + '...'
@@ -81,13 +97,7 @@ const fixTweet = (text, book) => {
 }
 
 
-const tweet = async (book, imageUrl) => {
-
-    // client.post('statuses/update', { status: `Book: ${title} - Image: ${imageUrl}` }).then(result => {
-    //     console.log('You successfully tweeted this : "' + result.text + '"');
-    // }).catch(console.error);
-
-    // console.log(app)
+const tweet = async (book, imageUrl, hashtags) => {
 
     request.get(imageUrl, function (error, response, body) {
 
@@ -98,10 +108,10 @@ const tweet = async (book, imageUrl) => {
 
                     // console.log('You successfully uploaded media');
 
-                    let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai #textada001`
+                    let tweetText = `Book: ${book.title} - author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${hashtags}`
 
                     if (!twitterText.parseTweet(tweetText).valid) {
-                        fixed = fixTweet(tweetText, book)
+                        fixed = fixTweet(tweetText, book, hashtags)
                         tweetText = fixed
                     }
 
@@ -121,9 +131,15 @@ const tweet = async (book, imageUrl) => {
     });
 }
 
+const generateRandomModel = ()  => {
+    const rndInt = Math.floor(Math.random() * (3 - 0)) + 0;
+    const model = openaiTextModels[rndInt];
+    return model;
+}
+
 const generateRandomBook = async () => {
 
-    const url = 'http://gutendex.com/books'
+    const url = 'http://gutendex.com/books/?topic=Classical%20literature'
     const res = await fetch(url);
     const data = await res.json();
     // console.log(data)
@@ -158,13 +174,15 @@ const generateImage = async (text) => {
 const guttemberbTweetWorker = async () => {
     // generateImage()
     let book = await generateRandomBook()
-    console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
+    // console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
+    console.log(`book name=[${book.title}] - author: ${getBookAuthor(book)}`);
 
-    let description = await bookTitleToDescription(book);
+    let model = generateRandomModel()
+    let description = await bookTitleToDescription(book, model);
 
     let url = await generateImage(description.data.choices[0].text);
     // console.log(`url=[${url}]`)
-    await tweet(book, url)
+    await tweet(book, url, modelToHashtag.get(model))
 }
 
 const job = nodeCron.schedule("0 */30 * * * *", () => {
