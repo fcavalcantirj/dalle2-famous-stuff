@@ -155,7 +155,7 @@ const generateImage = async (text) => {
     return image_url;
 }
 
-const main = async () => {
+const guttemberbTweetWorker = async () => {
     // generateImage()
     let book = await generateRandomBook()
     console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
@@ -167,9 +167,9 @@ const main = async () => {
     await tweet(book, url)
 }
 
-const job = nodeCron.schedule("0 */20 * * * *", () => {
+const job = nodeCron.schedule("0 */30 * * * *", () => {
     try {
-        main()
+        guttemberbTweetWorker()
         console.log(new Date().toLocaleString());
     } catch(err) {
         console.log(err)
