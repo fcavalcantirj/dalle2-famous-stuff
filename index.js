@@ -66,7 +66,7 @@ let hashtags = ['#dalle2', '#dalle', '#openai']
 
 const fixTweet = (text, book) => {
     try {
-        let author = `- author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai #text-davinci-003`
+        let author = `- author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai #textdavinci003`
         let delta = 240 - author.replace(/[^a-z]/gi, "").length;
         let bookTitle = book.title;
         let fixed = bookTitle.substring(0, (delta - 3)) + '...'
@@ -98,7 +98,7 @@ const tweet = async (book, imageUrl) => {
 
                     // console.log('You successfully uploaded media');
 
-                    let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai #text-davinci-003`
+                    let tweetText = `Book: ${book.title} - author: ${book.authors[0].name} - birthYear: ${book.authors[0].birth_year || 'unknown'} #dalle2 #dalle #openai #textdavinci003`
 
                     if (!twitterText.parseTweet(tweetText).valid) {
                         fixed = fixTweet(tweetText, book)
