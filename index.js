@@ -40,9 +40,16 @@ const uploadClient = config.newClient('upload');
 
 const bookTitleToDescription = async (book) => {
 
+    let prompt = `I want to generate a very good description of a book cover based on the book title ${book.title}`
+
+    if (book.authors && book.authors.length >= 0) {
+        prompt += `, author ${book.authors[0].name}`
+
+    }
+
     const response = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: `I want to generate a very good description of a book cover based on the book title ${book.title}, author ${book.authors[0].name}`,
+      prompt: prompt,
       temperature: 0,
       max_tokens: 125,
       top_p: 1,
