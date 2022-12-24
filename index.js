@@ -275,7 +275,7 @@ const marvelCharacterTweetWorker = async () => {
         if (character.description && '' != character.description) {
             prompt += `, description ${character.description}`
         }
-        console.log(prompt);
+        // console.log(prompt);
 
         let description = await generateDescriptionByPrompt(prompt, model, 80);
 
