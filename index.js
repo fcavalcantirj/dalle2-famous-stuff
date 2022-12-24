@@ -79,7 +79,7 @@ const generateDescriptionByPrompt = async (prompt, model, maxTokens) => {
         return response;
 
     } catch(err) {
-        console.log(`error generating prompt. err=[${err.data}] returning prompt=[${prompt}]`)
+        console.log(`error generating prompt. err=[${err}] returning prompt=[${prompt}]`)
         return prompt;
     }
 
