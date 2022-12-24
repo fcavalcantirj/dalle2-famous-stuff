@@ -152,11 +152,11 @@ const generateRandomMarvelCharacter = async (callback) => {
         let random = Math.floor(Math.random() * (total - 0)) + 0
         // console.log(random)
 
-        // console.log(`total=[${total}] finding character n=[${random}]`)
+        console.log(`total=[${total}] finding character n=[${random}]`)
 
         marvel.characters.findAll(1, random)
           .then((result) => {
-            // console.log(result)
+            console.log(result)
             callback(result.data)
 
           })
@@ -239,7 +239,7 @@ const guttenberJob = nodeCron.schedule("0 */30 * * * *", () => {
 const marvelCharacterTweetWorker = async () => {
 
     generateRandomMarvelCharacter(async (character) => {
-        // console.log(character)
+        console.log(character)
 
         let model = generateRandomModel()
         let prompt = `I want to generate a very good cartoon description of an epic character named ${character.name}`
