@@ -168,6 +168,8 @@ const generateRandomModel = ()  => {
 
 const generateRandomMarvelCharacter = async (callback) => {
 
+    // todo randomize this
+    // total hardcoded
     marvel.characters.findAll(100, 0)
       .then((result) => {
         // console.log(result)
@@ -185,12 +187,9 @@ const generateRandomMarvelCharacter = async (callback) => {
           })
           .fail(console.error)
           .done();
-
-
       })
       .fail(console.error)
       .done();
-
 }
 
 const generateRandomBook = async () => {
@@ -310,7 +309,7 @@ const marvelCharacterTweetWorker = async () => {
             let url = await generateImage(imageDescription);
             // console.log(`url=[${url}]`)
 
-            let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+            let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description.data.choices[0].text} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
             if (!twitterText.parseTweet(tweetText).valid) {
                 fixed = fixMarvelTweet(tweetText, character, description, modelToHashtag.get(model))
                 tweetText = fixed
