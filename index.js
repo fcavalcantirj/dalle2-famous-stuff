@@ -101,13 +101,13 @@ const getBookAuthor = (book) => {
    } 
 }
 
-const fixMarvelTweet = (text, character, hashtags) => {
+const fixMarvelTweet = (text, character, description, hashtags) => {
     try {
         let start = `Marvel character: ${character.name} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
         let delta = 240 - start.replace(/[^a-z]/gi, "").length;
-        let characterDescription = character.description;
+        let characterDescription = character.description || description;
         let fixed = characterDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `Marvel character: ${character.name} - description:${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let fixedTweet = `Marvel character: ${character.name} - desc:${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
         let length = fixedTweet.replace(/[^a-z]/gi, "").length
         console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
         return fixedTweet;
@@ -231,7 +231,7 @@ const guttenberbTweetWorker = async () => {
 
     let book = await generateRandomBook()
     // console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
-    console.log(`book name=[${book.title}] - author: ${getBookAuthor(book)}`);
+    console.log(`book name=[${book.title}] - author: [${getBookAuthor(book)}]`);
 
     let model = generateRandomModel()
     let prompt = `I want to generate a description of a book cover based on the book title ${book.title}, author ${getBookAuthor(book)}`
@@ -276,32 +276,47 @@ const marvelCharacterTweetWorker = async () => {
     generateRandomMarvelCharacter(async (character) => {
         // console.log(character)
 
-        let model = generateRandomModel()
-        let prompt = `I want to generate the description of an image of an epic character named ${character.name}`
         if (character.description && '' != character.description) {
-            prompt += `, description ${character.description}`
+
+            let imageDescription = `An high definition wallpaper image of an marvel character named ${character.name} portrayed as ${character.description}`
+
+            // console.log(imageDescription)
+
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `Marvel character: ${character.name} - desc: ${character.description} #marvel #marvelapi #dalle2 #dalle #openai`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                fixed = fixMarvelTweet(tweetText, character, modelToHashtag.get(model))
+                tweetText = fixed
+            }
+            await tweet(tweetText, url)
+
+        } else {
+
+            let model = generateRandomModel()
+            let prompt = `I want to generate the description of an image of an epic character named ${character.name}`
+            
+            // console.log(prompt);
+
+            let description = await generateDescriptionByPrompt(prompt, model, 80);
+
+            // console.log(description.data.choices[0].text)
+
+            let imageDescription = `An high definition wallpaper image of an marvel character portrayed as ${description.data.choices[0].text}`
+
+            // console.log(imageDescription)
+
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                fixed = fixMarvelTweet(tweetText, character, description, modelToHashtag.get(model))
+                tweetText = fixed
+            }
+            await tweet(tweetText, url)
         }
-        // console.log(prompt);
-
-        let description = await generateDescriptionByPrompt(prompt, model, 80);
-
-        // console.log(description.data.choices[0].text)
-
-        let imageDescription = `An high definition wallpaper image of an marvel character portrayed as ${description.data.choices[0].text}`
-
-        // console.log(imageDescription)
-
-        let url = await generateImage(imageDescription);
-        // console.log(`url=[${url}]`)
-
-        let tweetText = `Marvel character: ${character.name} - description: ${character.description || 'unknown'} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
-        if (!twitterText.parseTweet(tweetText).valid) {
-            fixed = fixMarvelTweet(tweetText, character, modelToHashtag.get(model))
-            tweetText = fixed
-        }
-        await tweet(tweetText, url)
-
-
     })
 }
 
