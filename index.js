@@ -1,4 +1,3 @@
-const { Configuration, OpenAIApi } = require("openai");
 const TelegramBot = require('node-telegram-bot-api');
 const nodeCron = require("node-cron");
 const twitterText = require('twitter-text');
@@ -12,6 +11,8 @@ const marvel = api.createClient({
   privateKey: process.env.MARVEL_KEY_SECRET
 });
 let TOTAL_MARVEL_CHARACTERS_COUNT = 1562
+let TOTAL_MARVEL_STORY_COUNT = 123823
+
 
 
 // telegram
@@ -20,6 +21,7 @@ const bot = new TelegramBot(token, {polling: true});
 
 
 // openai
+const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({
   apiKey: process.env.OPEN_AI_KEY,
 });
@@ -74,9 +76,7 @@ const generateDescriptionByPrompt = async (prompt, model, maxTokens) => {
           frequency_penalty: 0.2,
           presence_penalty: 0,
         });
-
         // console.log(response.data.choices[0].text)
-
         return response;
 
     } catch(err) {
@@ -102,10 +102,27 @@ const getBookAuthor = (book) => {
    } 
 }
 
+const fixMarvelStoryTweet = (text, story, hashtags) => {
+    try {
+        let start = `Marvel story: ${story.title} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
+        let storyDescription = new String(story.description);
+        let fixed = storyDescription.substring(0, (delta - 3)) + '...'
+        let fixedTweet = `Marvel story: ${story.title} - ${(story.openApiDescription ? 'desc (from openapi): ' : 'desc: ')} ${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let length = fixedTweet.replace(/[^a-z]/gi, "").length
+        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
+        return fixedTweet;
+    } catch(err) {
+        console.log(err)
+        return text
+    }
+}
+
+
 const fixMarvelTweet = (text, character, hashtags) => {
     try {
         let start = `Marvel character: ${character.name} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let delta = 240 - start.replace(/[^a-z]/gi, "").length;
+        let delta = 230 - start.replace(/[^a-z]/gi, "").length;
         let characterDescription = new String(character.description);
         let fixed = characterDescription.substring(0, (delta - 3)) + '...'
         let fixedTweet = `Marvel character: ${character.name} - desc:${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
@@ -167,10 +184,24 @@ const generateRandomModel = ()  => {
 }
 
 
+const generateRandomMarvelStory = async (callback) => {
+
+    const random = Math.floor(Math.random() * (TOTAL_MARVEL_STORY_COUNT - 0)) + 0
+    marvel.stories.findAll(1, random)
+      .then((result) => {
+        // console.log(result)
+        let updatedTotal = +result.meta.total+1
+        console.log(`TOTAL_MARVEL_STORY_COUNT =[${TOTAL_MARVEL_STORY_COUNT}] updated=[${updatedTotal}]`)
+        TOTAL_MARVEL_STORY_COUNT = updatedTotal
+        callback(result.data[0])
+      })
+      .fail(console.error)
+      .done();
+}
+
+
 const generateRandomMarvelCharacter = async (callback) => {
 
-    // total hardcoded 1562
-    // one more to include 1562
     const random = Math.floor(Math.random() * (TOTAL_MARVEL_CHARACTERS_COUNT - 0)) + 0
     marvel.characters.findAll(1, random)
       .then((result) => {
@@ -294,16 +325,16 @@ const marvelCharacterTweetWorker = async () => {
 
             // console.log(description.data.choices[0].text)
 
-            let imageDescription = `An high definition wallpaper image of an marvel character portrayed as ${description.data.choices[0].text}`
+            let imageDescription = `An high definition wallpaper image of an marvel character named ${character.name} portrayed as ${description.data.choices[0].text.replace(/[\r\n]/gm, '')}`
 
             // console.log(imageDescription)
 
             let url = await generateImage(imageDescription);
             // console.log(`url=[${url}]`)
 
-            let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description.data.choices[0].text} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+            let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
             if (!twitterText.parseTweet(tweetText).valid) {
-                character.description = description.data.choices[0].text
+                character.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
                 fixed = fixMarvelTweet(tweetText, character, modelToHashtag.get(model))
                 tweetText = fixed
             }
@@ -316,6 +347,69 @@ const marvelCharacterJob = nodeCron.schedule("0 */30 * * * *", () => {
     try {
         marvelCharacterTweetWorker()
         console.log(`job=[marvelCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
+    } catch(err) {
+        console.log(err)
+    }
+});
+
+
+
+const marvelStoriesTweetWorker = async () => {
+
+    generateRandomMarvelStory(async (story) => {
+        // console.log(`story title=[${story.title}] description=[${story.description}]`)
+
+        if (story.description && '' != story.description) {
+
+            let imageDescription = `An high definition wallpaper image of an marvel story titled ${story.title} portrayed as ${story.description}`
+
+            // console.log(imageDescription)
+
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `Marvel story: ${story.title} - desc: ${story.description} #marvel #marvelapi #dalle2 #dalle #openai`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                story.openApiDescription = false
+                fixed = fixMarvelStoryTweet(tweetText, story, '#storyapi')
+                tweetText = fixed
+            }
+            await tweet(tweetText, url)
+
+        } else {
+
+            let model = generateRandomModel()
+            let prompt = `I want to generate the description of an image of an epic story titled ${story.title}`
+            
+            // console.log(prompt);
+
+            let description = await generateDescriptionByPrompt(prompt, model, 50);
+
+            // console.log(description.data.choices[0].text)
+
+            let imageDescription = `An high definition wallpaper image of an marvel story titled ${story.title} portrayed as ${description.data.choices[0].text.replace(/[\r\n]/gm, '')}`
+
+            // console.log(imageDescription)
+
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `Marvel story: ${story.title} - desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                story.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                story.openApiDescription = true
+                fixed = fixMarvelStoryTweet(tweetText, story, modelToHashtag.get(model))
+                tweetText = fixed
+            }
+            await tweet(tweetText, url)
+        }
+    })
+}
+
+const marvelStoriesJob = nodeCron.schedule("0 */20 * * * *", () => {
+    try {
+        marvelStoriesTweetWorker()
+        console.log(`job=[marvelStoriesJob] timestamp=[${new Date().toLocaleString()}]`);
     } catch(err) {
         console.log(err)
     }

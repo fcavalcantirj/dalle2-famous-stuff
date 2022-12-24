@@ -5,6 +5,12 @@ const marvel = api.createClient({
   privateKey: process.env.MARVEL_KEY_SECRET
 });
 
+// openai
+const { Configuration, OpenAIApi } = require("openai");
+const configuration = new Configuration({
+  apiKey: process.env.OPEN_AI_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
 let TOTAL_MARVEL_CHARACTERS_COUNT = 1563
 const generateRandomMarvelCharacter = async (callback) => {
@@ -24,7 +30,7 @@ const generateRandomMarvelCharacter = async (callback) => {
       .done();
 }
 
-TOTAL_MARVEL_STORY_COUNT = 123823
+let TOTAL_MARVEL_STORY_COUNT = 123823
 const generateRandomMarvelStory = async (callback) => {
 
     // total hardcoded 1562
@@ -32,29 +38,35 @@ const generateRandomMarvelStory = async (callback) => {
     const random = Math.floor(Math.random() * (TOTAL_MARVEL_STORY_COUNT - 0)) + 0
     marvel.stories.findAll(1, random)
       .then((result) => {
-        console.log(result)
+        // console.log(result)
         let updatedTotal = +result.meta.total+1
         console.log(`TOTAL_MARVEL_STORY_COUNT =[${TOTAL_MARVEL_STORY_COUNT}] updated=[${updatedTotal}]`)
         TOTAL_MARVEL_STORY_COUNT = updatedTotal
-
-        let id = result.data[0].id
-        marvel.stories.find(id)
-          .then((result) => {
-            console.log(result)
-            callback(result.data[0])
-          })
-          .fail(console.error)
-          .done();
+        callback(result.data[0])
       })
       .fail(console.error)
       .done();
 }
 
+const generateImage = async (text) => {
+    console.log(`generateImage prompt=[${text}]`)
+    const response = await openai.createImage({
+      prompt: text,
+      n: 1,
+      size: "1024x1024",
+    });
+    let image_url = response.data.data[0].url;
+    console.log(`url of generated image = [${image_url}]`)
+    return image_url;
+}
+
 
 const main = async () => {
 
+    // generateImage('a twitter background of a painting of an epic battle portrayed as supernova')
+
     generateRandomMarvelStory((story) => {
-        // console.log(story)
+        console.log(story.title)
     })
 
 }
