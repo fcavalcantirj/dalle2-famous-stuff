@@ -238,7 +238,7 @@ const guttenberJob = nodeCron.schedule("0 */30 * * * *", () => {
 
 const marvelCharacterTweetWorker = async () => {
 
-    generateRandomMarvelCharacter((character) => {
+    generateRandomMarvelCharacter(async (character) => {
         // console.log(character)
 
         let model = generateRandomModel()
