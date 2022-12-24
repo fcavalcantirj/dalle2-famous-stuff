@@ -125,7 +125,7 @@ const fixMarvelTweet = (text, character, hashtags) => {
         let delta = 230 - start.replace(/[^a-z]/gi, "").length;
         let characterDescription = new String(character.description);
         let fixed = characterDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `Marvel character: ${character.name} - desc:${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let fixedTweet = `Marvel character: ${character.name} - ${(character.openApiDescription ? 'desc (from openapi): ' : 'desc: ')} ${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
         let length = fixedTweet.replace(/[^a-z]/gi, "").length
         console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
         return fixedTweet;
@@ -309,6 +309,7 @@ const marvelCharacterTweetWorker = async () => {
 
             let tweetText = `Marvel character: ${character.name} - desc: ${character.description} #marvel #marvelapi #dalle2 #dalle #openai`
             if (!twitterText.parseTweet(tweetText).valid) {
+                character.openApiDescription = false
                 fixed = fixMarvelTweet(tweetText, character, '#characterapi')
                 tweetText = fixed
             }
@@ -335,6 +336,7 @@ const marvelCharacterTweetWorker = async () => {
             let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
             if (!twitterText.parseTweet(tweetText).valid) {
                 character.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                character.openApiDescription = true
                 fixed = fixMarvelTweet(tweetText, character, modelToHashtag.get(model))
                 tweetText = fixed
             }
