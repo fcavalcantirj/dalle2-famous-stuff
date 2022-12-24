@@ -287,7 +287,7 @@ const marvelCharacterTweetWorker = async () => {
 
             let tweetText = `Marvel character: ${character.name} - desc: ${character.description} #marvel #marvelapi #dalle2 #dalle #openai`
             if (!twitterText.parseTweet(tweetText).valid) {
-                fixed = fixMarvelTweet(tweetText, character, modelToHashtag.get(model))
+                fixed = fixMarvelTweet(tweetText, character, '#characterapi')
                 tweetText = fixed
             }
             await tweet(tweetText, url)
