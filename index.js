@@ -135,7 +135,7 @@ const tweet = async (book, imageUrl, hashtags) => {
 }
 
 const generateRandomModel = ()  => {
-    const rndInt = Math.floor(Math.random() * (3 - 0)) + 0;
+    const rndInt = Math.floor(Math.random() * (4 - 0)) + 0;
     const model = openaiTextModels[rndInt];
     return model;
 }
