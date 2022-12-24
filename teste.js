@@ -24,11 +24,37 @@ const generateRandomMarvelCharacter = async (callback) => {
       .done();
 }
 
+TOTAL_MARVEL_STORY_COUNT = 123823
+const generateRandomMarvelStory = async (callback) => {
+
+    // total hardcoded 1562
+    // one more to include 1562
+    const random = Math.floor(Math.random() * (TOTAL_MARVEL_STORY_COUNT - 0)) + 0
+    marvel.stories.findAll(1, random)
+      .then((result) => {
+        console.log(result)
+        let updatedTotal = +result.meta.total+1
+        console.log(`TOTAL_MARVEL_STORY_COUNT =[${TOTAL_MARVEL_STORY_COUNT}] updated=[${updatedTotal}]`)
+        TOTAL_MARVEL_STORY_COUNT = updatedTotal
+
+        let id = result.data[0].id
+        marvel.stories.find(id)
+          .then((result) => {
+            console.log(result)
+            callback(result.data[0])
+          })
+          .fail(console.error)
+          .done();
+      })
+      .fail(console.error)
+      .done();
+}
+
 
 const main = async () => {
 
-    generateRandomMarvelCharacter((character) => {
-        console.log(character)
+    generateRandomMarvelStory((story) => {
+        // console.log(story)
     })
 
 }
