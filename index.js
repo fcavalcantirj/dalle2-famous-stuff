@@ -111,7 +111,7 @@ const fixTweet = (text, book) => {
 }
 
 
-const tweet = async (textToTweet, imageUrl, hashtags) => {
+const tweet = async (textToTweet, imageUrl) => {
 
     request.get(imageUrl, function (error, response, body) {
 
@@ -220,11 +220,11 @@ const guttenberbTweetWorker = async () => {
 
     let tweetText = `Book: ${book.title} - author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${hashtags}`
     if (!twitterText.parseTweet(tweetText).valid) {
-        fixed = fixTweet(tweetText, book, hashtags)
+        fixed = fixTweet(tweetText, book, modelToHashtag.get(model))
         tweetText = fixed
     }
 
-    await tweet(tweetText, url, modelToHashtag.get(model))
+    await tweet(tweetText, url)
 }
 
 const guttenberJob = nodeCron.schedule("0 */30 * * * *", () => {
@@ -253,12 +253,12 @@ const marvelCharacterTweetWorker = async () => {
         let url = await generateImage(description.data.choices[0].text);
         // console.log(`url=[${url}]`)
 
-        let tweetText = `Marvel character: ${character.name} - description: ${character.description || 'unknown'} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let tweetText = `Marvel character: ${character.name} - description: ${character.description || 'unknown'} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
         if (!twitterText.parseTweet(tweetText).valid) {
             // doSomething
             console.log(`tweetText too long. text=[${tweetText}]`)
         }
-        await tweet(tweetText, url, modelToHashtag.get(model))
+        await tweet(tweetText, url)
 
 
     })
