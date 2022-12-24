@@ -102,11 +102,11 @@ const getBookAuthor = (book) => {
    } 
 }
 
-const fixMarvelTweet = (text, character, description, hashtags) => {
+const fixMarvelTweet = (text, character, hashtags) => {
     try {
         let start = `Marvel character: ${character.name} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
         let delta = 240 - start.replace(/[^a-z]/gi, "").length;
-        let characterDescription = character.description || description;
+        let characterDescription = new String(character.description);
         let fixed = characterDescription.substring(0, (delta - 3)) + '...'
         let fixedTweet = `Marvel character: ${character.name} - desc:${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
         let length = fixedTweet.replace(/[^a-z]/gi, "").length
@@ -253,7 +253,7 @@ const guttenberbTweetWorker = async () => {
     await tweet(tweetText, url)
 }
 
-const guttenberJob = nodeCron.schedule("0 */30 * * * *", () => {
+const guttenberJob = nodeCron.schedule("0 */60 * * * *", () => {
     try {
         guttenberbTweetWorker()
         console.log(`job=[guttenberJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -303,7 +303,8 @@ const marvelCharacterTweetWorker = async () => {
 
             let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description.data.choices[0].text} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
             if (!twitterText.parseTweet(tweetText).valid) {
-                fixed = fixMarvelTweet(tweetText, character, description, modelToHashtag.get(model))
+                character.description = description
+                fixed = fixMarvelTweet(tweetText, character, modelToHashtag.get(model))
                 tweetText = fixed
             }
             await tweet(tweetText, url)
@@ -311,7 +312,7 @@ const marvelCharacterTweetWorker = async () => {
     })
 }
 
-const marvelCharacterJob = nodeCron.schedule("0 */20 * * * *", () => {
+const marvelCharacterJob = nodeCron.schedule("0 */30 * * * *", () => {
     try {
         marvelCharacterTweetWorker()
         console.log(`job=[marvelCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
