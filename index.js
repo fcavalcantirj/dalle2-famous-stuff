@@ -298,7 +298,7 @@ const marvelCharacterTweetWorker = async () => {
             
             // console.log(prompt);
 
-            let description = await generateDescriptionByPrompt(prompt, model, 80);
+            let description = await generateDescriptionByPrompt(prompt, model, 50);
 
             // console.log(description.data.choices[0].text)
 
