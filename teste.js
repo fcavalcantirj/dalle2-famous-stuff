@@ -1,40 +1,27 @@
-var api = require('marvel-api');
+const api = require('marvel-api');
 
-var marvel = api.createClient({
-  publicKey: process.env.MARVEL_KEY
-, privateKey: process.env.MARVEL_KEY_SECRET
+const marvel = api.createClient({
+  publicKey: process.env.MARVEL_KEY, 
+  privateKey: process.env.MARVEL_KEY_SECRET
 });
 
 
-
+let TOTAL_MARVEL_CHARACTERS_COUNT = 1563
 const generateRandomMarvelCharacter = async (callback) => {
 
-    marvel.characters.findAll(100, 0)
+    // total hardcoded 1562
+    // one more to include 1562
+    const random = Math.floor(Math.random() * (TOTAL_MARVEL_CHARACTERS_COUNT - 0)) + 0
+    marvel.characters.findAll(1, random)
       .then((result) => {
         // console.log(result)
-        let total = result.meta.total;
-
-        let random = Math.floor(Math.random() * (total - 0)) + 0
-
-        // console.log(random)
-
-        console.log(`total=[${total}] finding character n=[${random}]`)
-
-        marvel.characters.findAll(1, random)
-          .then((result) => {
-            // console.log(result)
-            // return result
-            callback(result.data)
-
-          })
-          .fail(console.error)
-          .done();
-
-
+        let updatedTotal = +result.meta.total+1
+        console.log(`TOTAL_MARVEL_CHARACTERS_COUNT =[${TOTAL_MARVEL_CHARACTERS_COUNT}] updated=[${updatedTotal}]`)
+        TOTAL_MARVEL_CHARACTERS_COUNT = updatedTotal
+        callback(result.data[0])
       })
       .fail(console.error)
       .done();
-
 }
 
 
