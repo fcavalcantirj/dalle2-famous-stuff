@@ -1,25 +1,37 @@
 const { Configuration, OpenAIApi } = require("openai");
 const TelegramBot = require('node-telegram-bot-api');
 const nodeCron = require("node-cron");
-const twitterText = require('twitter-text')
-
+const twitterText = require('twitter-text');
 const request = require('request').defaults({ encoding: null });
 
+
+// marvel
+const api = require('marvel-api');
+const marvel = api.createClient({
+  publicKey: process.env.MARVEL_KEY, 
+  privateKey: process.env.MARVEL_KEY_SECRET
+});
+
+
+// telegram
 const token = process.env.TELEGRAM_API_KEY_DALLE2;
 const bot = new TelegramBot(token, {polling: true});
 
+
+// openai
 const configuration = new Configuration({
   apiKey: process.env.OPEN_AI_KEY,
 });
 const openai = new OpenAIApi(configuration);
 
+
+// nytimes
 // https://api.nytimes.com/svc/books/v3/lists/full-overview.json?api-key=amKvmaWADFUgzl4EEjHNaZauh7E6c4Sm
 const nytimesKey = process.env.NY_TIMES_KEY
 const nytimesKeySecret = process.env.NY_TIMES_KEY_SECRET
 
-const marvelKey = process.env.MARVEL_KEY
-const marvelKeySecret = process.env.MARVEL_KEY_SECRET
 
+// twitter
 const config = {  
   consumer_key: process.env.TWITTER_CONSUMER_API_KEY,  
   consumer_secret: process.env.TWITTER_CONSUMER_API_SECRET,  
@@ -40,6 +52,7 @@ config.newClient = function (subdomain = 'api') {
 }
 const uploadClient = config.newClient('upload');
 
+
 const openaiTextModels = ['text-ada-001', 'text-babbage-001', 'text-curie-001', 'text-davinci-003']
 const modelToHashtag = new Map([
   ['text-ada-001', '#textada001'],
@@ -48,9 +61,7 @@ const modelToHashtag = new Map([
   ['text-davinci-003', '#textdavinci003'],
 ]);
 
-const bookTitleToDescription = async (book, model) => {
-
-    let prompt = `I want to generate a very good description of a book cover based on the book title ${book.title}, author ${getBookAuthor(book)}`
+const generateDescriptionByPrompt = async (prompt, model) => {
 
     const response = await openai.createCompletion({
       model: model,
@@ -100,7 +111,7 @@ const fixTweet = (text, book) => {
 }
 
 
-const tweet = async (book, imageUrl, hashtags) => {
+const tweet = async (textToTweet, imageUrl, hashtags) => {
 
     request.get(imageUrl, function (error, response, body) {
 
@@ -108,22 +119,13 @@ const tweet = async (book, imageUrl, hashtags) => {
 
             uploadClient.post('media/upload', { media_data: Buffer.from(body).toString('base64') })
                 .then(media => {
-
                     // console.log('You successfully uploaded media');
 
-                    let tweetText = `Book: ${book.title} - author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${hashtags}`
-
-                    if (!twitterText.parseTweet(tweetText).valid) {
-                        fixed = fixTweet(tweetText, book, hashtags)
-                        tweetText = fixed
-                    }
-
-                    var media_id = media.media_id_string;
-                    client.post('statuses/update', { status: tweetText, media_ids: media_id })
+                    const media_id = media.media_id_string;
+                    client.post('statuses/update', { status: textToTweet, media_ids: media_id })
                         .then(tweet => {
 
                             // console.log('Your image tweet is posted successfully');
-
                             console.log('successfully tweeted this : "' + tweet.text + '"');
 
 
@@ -141,12 +143,30 @@ const generateRandomModel = ()  => {
 }
 
 
-const generateRandomMarvelCharacter = async () => {
+const generateRandomMarvelCharacter = async (callback) => {
 
-    const url = `http://gateway.marvel.com/v1/public/comics?apikey=${marvelKey}`
-    const res = await fetch(url);
-    const data = await res.json();
-    console.log(data)
+    marvel.characters.findAll(100, 0)
+      .then((result) => {
+        // console.log(result)
+        let total = result.meta.total;
+        let random = Math.floor(Math.random() * (total - 0)) + 0
+        // console.log(random)
+
+        // console.log(`total=[${total}] finding character n=[${random}]`)
+
+        marvel.characters.findAll(1, random)
+          .then((result) => {
+            // console.log(result)
+            callback(result.data)
+
+          })
+          .fail(console.error)
+          .done();
+
+
+      })
+      .fail(console.error)
+      .done();
 
 }
 
@@ -184,29 +204,74 @@ const generateImage = async (text) => {
     return image_url;
 }
 
-const guttemberbTweetWorker = async () => {
-    // generateImage()
+const guttenberbTweetWorker = async () => {
+
     let book = await generateRandomBook()
     // console.log(`book name=[${book.title}] author=[${book.authors[0].name}]`);
     console.log(`book name=[${book.title}] - author: ${getBookAuthor(book)}`);
 
     let model = generateRandomModel()
-    let description = await bookTitleToDescription(book, model);
+    let prompt = `I want to generate a very good description of a book cover based on the book title ${book.title}, author ${getBookAuthor(book)}`
+
+    let description = await generateDescriptionByPrompt(prompt, model);
 
     let url = await generateImage(description.data.choices[0].text);
     // console.log(`url=[${url}]`)
-    await tweet(book, url, modelToHashtag.get(model))
+
+    let tweetText = `Book: ${book.title} - author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${hashtags}`
+    if (!twitterText.parseTweet(tweetText).valid) {
+        fixed = fixTweet(tweetText, book, hashtags)
+        tweetText = fixed
+    }
+
+    await tweet(tweetText, url, modelToHashtag.get(model))
 }
 
-const job = nodeCron.schedule("0 */30 * * * *", () => {
+const guttenberJob = nodeCron.schedule("0 */30 * * * *", () => {
     try {
-        guttemberbTweetWorker()
+        guttenberbTweetWorker()
         console.log(new Date().toLocaleString());
     } catch(err) {
         console.log(err)
     }
 });
 
+const marvelCharacterTweetWorker = async () => {
+
+    generateRandomMarvelCharacter((character) => {
+        // console.log(character)
+
+        let model = generateRandomModel()
+        let prompt = `I want to generate a very good cartoon description of an epic character named ${character.name}`
+        if (character.description && '' != character.description) {
+            prompt += `, description ${character.description}`
+        }
+        console.log(prompt);
+
+        let description = await generateDescriptionByPrompt(prompt, model);
+
+        let url = await generateImage(description.data.choices[0].text);
+        // console.log(`url=[${url}]`)
+
+        let tweetText = `Marvel character: ${character.name} - description: ${character.description || 'unknown'} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        if (!twitterText.parseTweet(tweetText).valid) {
+            // doSomething
+            console.log(`tweetText too long. text=[${tweetText}]`)
+        }
+        await tweet(tweetText, url, modelToHashtag.get(model))
+
+
+    })
+}
+
+const marvelCharacterJob = nodeCron.schedule("0 */3 * * * *", () => {
+    try {
+        marvelCharacterTweetWorker()
+        console.log(new Date().toLocaleString());
+    } catch(err) {
+        console.log(err)
+    }
+});
 
   /**
    * /start

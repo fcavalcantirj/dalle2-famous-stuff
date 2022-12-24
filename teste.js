@@ -1,28 +1,52 @@
-const crypto = require('crypto')
+var api = require('marvel-api');
+
+var marvel = api.createClient({
+  publicKey: process.env.MARVEL_KEY
+, privateKey: process.env.MARVEL_KEY_SECRET
+});
 
 
-const marvelKey = process.env.MARVEL_KEY
-const marvelKeySecret = process.env.MARVEL_KEY_SECRET
+
+const generateRandomMarvelCharacter = async (callback) => {
+
+    marvel.characters.findAll(100, 0)
+      .then((result) => {
+        // console.log(result)
+        let total = result.meta.total;
+
+        let random = Math.floor(Math.random() * (total - 0)) + 0
+
+        // console.log(random)
+
+        console.log(`total=[${total}] finding character n=[${random}]`)
+
+        marvel.characters.findAll(1, random)
+          .then((result) => {
+            // console.log(result)
+            // return result
+            callback(result.data)
+
+          })
+          .fail(console.error)
+          .done();
 
 
-
-const generateRandomMarvelCharacter = async () => {
-
-
-    let timestamp = new Date().getTime()
-    let hash = crypto.createHash('md5').update(`${timestamp + marvelKeySecret + marvelKey}`).digest("hex")
-
-    console.log(hash)
-
-    const url = `http://gateway.marvel.com/v1/public/comics?apikey=${marvelKey}&hash=${hash}&ts=${timestamp}?limit=100`
-    const res = await fetch(url);
-    const data = await res.json();
-    console.log(data)
+      })
+      .fail(console.error)
+      .done();
 
 }
 
-// generateRandomMarvelCharacter()
 
+const main = async () => {
+
+    generateRandomMarvelCharacter((character) => {
+        console.log(character)
+    })
+
+}
+
+main()
 
 const printRandomInt = (number) => {
     for (var i = 0; i < number; i++) {
@@ -32,4 +56,4 @@ const printRandomInt = (number) => {
 
 
 
-printRandomInt(100)
+// printRandomInt(100)
