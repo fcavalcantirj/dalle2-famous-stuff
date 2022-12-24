@@ -240,8 +240,14 @@ const guttenberbTweetWorker = async () => {
 
     // console.log(description.data.choices[0].text)
 
-    let imageDescription = `A very good book cover image for a book named ${book.title}, with the description: ${description.data.choices[0].text}`
+    let imageDescription;
 
+    if (description.data && description.data.choices.length >= 0) {
+        imageDescription = `A very good book cover image for a book named ${book.title}, with the description: ${description.data.choices[0].text}`
+    } else {
+        imageDescription = `A very good book cover image for a book named ${book.title}, with the description: ${prompt}`
+
+    }
     // console.log(imageDescription)
 
     let url = await generateImage(imageDescription);
