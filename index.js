@@ -94,7 +94,7 @@ const getAuthorBirthYear = (book) => {
 }
 
 const getBookAuthor = (book) => {
-   if (book.authors && book.authors.length >= 0) {
+   if (book.authors && book.authors.length >= 0 && book.authors[0].name) {
         return book.authors[0].name
    } else {
     return 'unknown'
@@ -195,7 +195,7 @@ const generateRandomMarvelCharacter = async (callback) => {
 
 const generateRandomBook = async () => {
 
-    const url = 'http://gutendex.com/books/'
+    const url = 'http://gutendex.com/books'
     const res = await fetch(url);
     const data = await res.json();
     // console.log(data)
