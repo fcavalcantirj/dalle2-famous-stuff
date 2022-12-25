@@ -242,7 +242,7 @@ const generateImage = async (text) => {
     const response = await openai.createImage({
       prompt: text,
       n: 1,
-      size: "1024x1024",
+      size: "512x512",
     });
     let image_url = response.data.data[0].url;
     // console.log(`url of generated image = [${image_url}]`)
@@ -284,7 +284,8 @@ const guttenberbTweetWorker = async () => {
     await tweet(tweetText, url)
 }
 
-const guttenberJob = nodeCron.schedule("0 */300 * * * *", () => {
+// * * 1 * *
+const guttenberJob = nodeCron.schedule("0 * * 1 * *", () => {
     try {
         guttenberbTweetWorker()
         console.log(`job=[guttenberJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -345,7 +346,7 @@ const marvelCharacterTweetWorker = async () => {
     })
 }
 
-const marvelCharacterJob = nodeCron.schedule("0 */80 * * * *", () => {
+const marvelCharacterJob = nodeCron.schedule("0 * */12 1 * *", () => {
     try {
         marvelCharacterTweetWorker()
         console.log(`job=[marvelCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -408,7 +409,7 @@ const marvelStoriesTweetWorker = async () => {
     })
 }
 
-const marvelStoriesJob = nodeCron.schedule("0 */60 * * * *", () => {
+const marvelStoriesJob = nodeCron.schedule("0 * 1-23/2 1 * *", () => {
     try {
         marvelStoriesTweetWorker()
         console.log(`job=[marvelStoriesJob] timestamp=[${new Date().toLocaleString()}]`);
