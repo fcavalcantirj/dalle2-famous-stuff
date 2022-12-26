@@ -56,7 +56,7 @@ config.newClient = function (subdomain = 'api') {
 const uploadClient = config.newClient('upload');
 
 
-const openaiTextModels = ['text-ada-001', 'text-babbage-001', 'text-curie-001', 'text-davinci-003']
+const openaiTextModels = ['text-ada-001', 'text-babbage-001', 'text-curie-001', 'text-davinci-003', 'text-ada-001', 'text-babbage-001', 'text-curie-001']
 const modelToHashtag = new Map([
   ['text-ada-001', '#textada001'],
   ['text-babbage-001', '#textbabbage001'],
@@ -178,7 +178,7 @@ const tweet = async (textToTweet, imageUrl) => {
 }
 
 const generateRandomModel = ()  => {
-    const rndInt = Math.floor(Math.random() * (4 - 0)) + 0;
+    const rndInt = Math.floor(Math.random() * (7 - 0)) + 0;
     const model = openaiTextModels[rndInt];
     return model;
 }
