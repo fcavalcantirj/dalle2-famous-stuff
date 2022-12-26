@@ -87,16 +87,16 @@ const generateDescriptionByPrompt = async (prompt, model, maxTokens) => {
 }
 
 const getAuthorBirthYear = (book) => {
-   if (book.authors && book.authors.length >= 0 && book.authors[0].birth_year?.) {
-        return book.authors[0].birth_year?.
+   if (book.authors && book.authors.length >= 0 && book.authors[0]?.birth_year) {
+        return book.authors[0]?.birth_year
    } else {
     return 'unknown'
    } 
 }
 
 const getBookAuthor = (book) => {
-   if (book.authors && book.authors.length >= 0 && book.authors[0].name?.) {
-        return book.authors[0].name?.
+   if (book.authors && book.authors.length >= 0 && book.authors[0]?.name) {
+        return book.authors[0]?.name
    } else {
     return 'unknown'
    } 
