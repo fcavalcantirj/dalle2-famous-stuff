@@ -475,7 +475,7 @@ const marvelEventsTweetWorker = async () => {
 }
 
 
-const marvelEventsJob = nodeCron.schedule("0 * */1 * *", () => {
+const marvelEventsJob = nodeCron.schedule("*/3 * * * *", () => {
     try {
         marvelEventsTweetWorker()
         console.log(`job=[marvelEventsJob] timestamp=[${new Date().toLocaleString()}]`);
