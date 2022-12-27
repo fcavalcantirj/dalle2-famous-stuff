@@ -220,7 +220,7 @@ const generateRandomMarvelEvent = async (callback) => {
     const random = Math.floor(Math.random() * (TOTAL_MARVEL_EVENT_COUNT - 0)) + 0
     marvel.events.findAll(1, random)
       .then((result) => {
-        console.log(result)
+        // console.log(result)
         let updatedTotal = +result.meta.total+1
         console.log(`TOTAL_MARVEL_EVENT_COUNT =[${TOTAL_MARVEL_EVENT_COUNT}] updated=[${updatedTotal}]`)
         TOTAL_MARVEL_EVENT_COUNT = updatedTotal
