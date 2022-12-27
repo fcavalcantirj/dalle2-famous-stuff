@@ -285,14 +285,14 @@ const guttenberbTweetWorker = async () => {
 }
 
 // * * 1 * *
-const guttenberJob = nodeCron.schedule("0 */23 * * *", () => {
-    try {
-        guttenberbTweetWorker()
-        console.log(`job=[guttenberJob] timestamp=[${new Date().toLocaleString()}]`);
-    } catch(err) {
-        console.log(err)
-    }
-});
+// const guttenberJob = nodeCron.schedule("0 */23 * * *", () => {
+//     try {
+//         guttenberbTweetWorker()
+//         console.log(`job=[guttenberJob] timestamp=[${new Date().toLocaleString()}]`);
+//     } catch(err) {
+//         console.log(err)
+//     }
+// });
 
 const marvelCharacterTweetWorker = async () => {
 
