@@ -451,7 +451,7 @@ const marvelStoriesJob = nodeCron.schedule("0 */4 * * *", () => {
 const marvelEventsTweetWorker = async () => {
 
     generateRandomMarvelEvent(async (event) => {
-        // console.log(`story title=[${story.title}] description=[${story.description}]`)
+        // console.log(`event title=[${event.title}] description=[${event.description}]`)
 
         if (event.title && event.description && '' != event.description) {
 
@@ -464,8 +464,7 @@ const marvelEventsTweetWorker = async () => {
 
             let tweetText = `Marvel event: ${event.title} - desc: ${event.description} #marvel #marvelapi #dalle2 #dalle #openai`
             if (!twitterText.parseTweet(tweetText).valid) {
-                story.openApiDescription = false
-                fixed = fixMarvelEventTweet(tweetText, story, '#storyapi')
+                fixed = fixMarvelEventTweet(tweetText, event, '#storyapi')
                 tweetText = fixed
             }
             await tweet(tweetText, url)
