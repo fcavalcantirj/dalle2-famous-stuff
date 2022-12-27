@@ -12,7 +12,7 @@ const marvel = api.createClient({
 });
 let TOTAL_MARVEL_CHARACTERS_COUNT = 1562
 let TOTAL_MARVEL_STORY_COUNT = 123823
-
+let TOTAL_MARVEL_EVENT_COUNT = 75
 
 
 // telegram
@@ -118,6 +118,21 @@ const fixMarvelStoryTweet = (text, story, hashtags) => {
     }
 }
 
+const fixMarvelEventTweet = (text, event, hashtags) => {
+    try {
+        let start = `Marvel event: ${event.title} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
+        let eventDescription = new String(event.description);
+        let fixed = eventDescription.substring(0, (delta - 3)) + '...'
+        let fixedTweet = `Marvel event: ${event.title} - desc: ${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
+        let length = fixedTweet.replace(/[^a-z]/gi, "").length
+        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
+        return fixedTweet;
+    } catch(err) {
+        console.log(err)
+        return text
+    }
+}
 
 const fixMarvelTweet = (text, character, hashtags) => {
     try {
@@ -199,6 +214,21 @@ const generateRandomMarvelStory = async (callback) => {
       .done();
 }
 
+
+const generateRandomMarvelEvent = async (callback) => {
+
+    const random = Math.floor(Math.random() * (TOTAL_MARVEL_EVENT_COUNT - 0)) + 0
+    marvel.events.findAll(1, random)
+      .then((result) => {
+        console.log(result)
+        let updatedTotal = +result.meta.total+1
+        console.log(`TOTAL_MARVEL_EVENT_COUNT =[${TOTAL_MARVEL_EVENT_COUNT}] updated=[${updatedTotal}]`)
+        TOTAL_MARVEL_EVENT_COUNT = updatedTotal
+        callback(result.data[0])
+      })
+      .fail(console.error)
+      .done();
+}
 
 const generateRandomMarvelCharacter = async (callback) => {
 
@@ -356,7 +386,6 @@ const marvelCharacterJob = nodeCron.schedule("0 */6 * * *", () => {
 });
 
 
-
 const marvelStoriesTweetWorker = async () => {
 
     generateRandomMarvelStory(async (story) => {
@@ -413,6 +442,43 @@ const marvelStoriesJob = nodeCron.schedule("0 */4 * * *", () => {
     try {
         marvelStoriesTweetWorker()
         console.log(`job=[marvelStoriesJob] timestamp=[${new Date().toLocaleString()}]`);
+    } catch(err) {
+        console.log(err)
+    }
+});
+
+
+const marvelEventsTweetWorker = async () => {
+
+    generateRandomMarvelEvent(async (event) => {
+        // console.log(`story title=[${story.title}] description=[${story.description}]`)
+
+        if (event.title && event.description && '' != event.description) {
+
+            let imageDescription = `An high definition wallpaper image of an marvel event titled ${event.title} portrayed as ${event.description}`
+
+            // console.log(imageDescription)
+
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `Marvel event: ${event.title} - desc: ${event.description} #marvel #marvelapi #dalle2 #dalle #openai`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                story.openApiDescription = false
+                fixed = fixMarvelEventTweet(tweetText, story, '#storyapi')
+                tweetText = fixed
+            }
+            await tweet(tweetText, url)
+
+        }
+    })
+}
+
+
+const marvelEventsJob = nodeCron.schedule("0 * */1 * *", () => {
+    try {
+        marvelEventsTweetWorker()
+        console.log(`job=[marvelEventsJob] timestamp=[${new Date().toLocaleString()}]`);
     } catch(err) {
         console.log(err)
     }

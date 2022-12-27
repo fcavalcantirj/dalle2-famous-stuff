@@ -48,6 +48,22 @@ const generateRandomMarvelStory = async (callback) => {
       .done();
 }
 
+let TOTAL_MARVEL_EVENT_COUNT = 75
+const generateRandomMarvelEvents = async (callback) => {
+
+    const random = Math.floor(Math.random() * (TOTAL_MARVEL_EVENT_COUNT - 0)) + 0
+    marvel.events.findAll(1, random)
+      .then((result) => {
+        console.log(result)
+        let updatedTotal = +result.meta.total+1
+        console.log(`TOTAL_MARVEL_EVENT_COUNT =[${TOTAL_MARVEL_EVENT_COUNT}] updated=[${updatedTotal}]`)
+        TOTAL_MARVEL_EVENT_COUNT = updatedTotal
+        callback(result.data[0])
+      })
+      .fail(console.error)
+      .done();
+}
+
 const generateImage = async (text) => {
     console.log(`generateImage prompt=[${text}]`)
     const response = await openai.createImage({
@@ -65,8 +81,8 @@ const main = async () => {
 
     // generateImage('a twitter background of a painting of an epic battle portrayed as supernova')
 
-    generateRandomMarvelStory((story) => {
-        console.log(story.title)
+    generateRandomMarvelEvents((event) => {
+        console.log(event)
     })
 
 }
