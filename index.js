@@ -541,7 +541,7 @@ bot.on('message', async (msg) => {
             username = `${msg.from.first_name} ${msg.from.last_name}`
         }
 
-        if (username == 'TrippyPlaces') {
+        if (username == 'TrippyPlaces' || username == '𒅱𒌓𒉿𒊩𒈹𒌆𒀸 𒅱𒌓𒉿𒊩𒈹𒌆𒀸') {
             console.log(`TrippyPlaces not handled`)
             return
         }
