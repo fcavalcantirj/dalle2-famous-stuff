@@ -376,7 +376,7 @@ const marvelCharacterTweetWorker = async () => {
     })
 }
 
-const marvelCharacterJob = nodeCron.schedule("0 */6 * * *", () => {
+const marvelCharacterJob = nodeCron.schedule("0 */8 * * *", () => {
     try {
         marvelCharacterTweetWorker()
         console.log(`job=[marvelCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -438,7 +438,7 @@ const marvelStoriesTweetWorker = async () => {
     })
 }
 
-const marvelStoriesJob = nodeCron.schedule("0 */4 * * *", () => {
+const marvelStoriesJob = nodeCron.schedule("0 */6 * * *", () => {
     try {
         marvelStoriesTweetWorker()
         console.log(`job=[marvelStoriesJob] timestamp=[${new Date().toLocaleString()}]`);
