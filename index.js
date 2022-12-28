@@ -542,7 +542,7 @@ bot.on('message', async (msg) => {
         }
 
         if (username == 'TrippyPlaces' || username == '𒅱𒌓𒉿𒊩𒈹𒌆𒀸 𒅱𒌓𒉿𒊩𒈹𒌆𒀸') {
-            console.log(`TrippyPlaces not handled`)
+            console.log(`prompt not handled. username=[${username}]`)
             return
         }
 
