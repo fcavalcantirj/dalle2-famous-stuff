@@ -624,10 +624,10 @@ const starWarsStarshipTweetWorker = async () => {
 }
 
 
-const starWarsStarshipTweetWorker = nodeCron.schedule("0 */3 * * * *", () => {
+const starWarsStarshipJob = nodeCron.schedule("0 */3 * * * *", () => {
     try {
-        starWarsTweetWorker()
-        console.log(`job=[starWarsStarshipTweetWorker] timestamp=[${new Date().toLocaleString()}]`);
+        starWarsStarshipTweetWorker()
+        console.log(`job=[starWarsStarshipJob] timestamp=[${new Date().toLocaleString()}]`);
     } catch(err) {
         console.log(err)
     }
