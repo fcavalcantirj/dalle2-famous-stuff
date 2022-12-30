@@ -6,6 +6,7 @@ const request = require('request').defaults({ encoding: null });
 
 const swapi = require('swapi-node');
 let TOTAL_STARWARS_CHARACTERS_COUNT = 83
+let TOTAL_STARWARS_STARSHIPS_COUNT = 37
 
 // marvel
 const api = require('marvel-api');
@@ -128,6 +129,22 @@ const fixStarWarsCharacterTweet = (text, character, hashtags) => {
         let characterDescription = new String(character.description);
         let fixed = characterDescription.substring(0, (delta - 3)) + '...'
         let fixedTweet = `StarWars character: ${character.name} - 'desc (from openapi): ${fixed} #swapiapi #dalle2 #dalle #openai ${hashtags}`
+        let length = fixedTweet.replace(/[^a-z]/gi, "").length
+        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
+        return fixedTweet;
+    } catch(err) {
+        console.log(err)
+        return text
+    }
+}
+
+const fixStarWarsStarshipTweet = (text, starship, hashtags) => {
+    try {
+        let start = `StarWars starship: ${starship.model} - manufacturer ${starship.manufacturer} and starship_class ${starship.starship_class} #dalle2 #dalle #openai #swapiapi ${hashtags}`
+        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
+        let starshipDescription = new String(starship.description);
+        let fixed = starshipDescription.substring(0, (delta - 3)) + '...'
+        let fixedTweet = `StarWars starship: ${starship.name} - manufacturer ${starship.manufacturer} and starship_class ${starship.starship_class} 'desc (from openapi): ${fixed} #swapiapi #dalle2 #dalle #openai ${hashtags}`
         let length = fixedTweet.replace(/[^a-z]/gi, "").length
         console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
         return fixedTweet;
@@ -269,6 +286,17 @@ const generateRandomStarWarsCharacter = async (callback) => {
     const random = Math.floor(Math.random() * (TOTAL_STARWARS_CHARACTERS_COUNT - 0)) + 0
 
     swapi.people({ id: random }).then((result) => {
+        // console.log(result);
+        callback(result)
+    });
+
+}
+
+const generateRandomStarWarsStarship = async (callback) => {
+
+    const random = Math.floor(Math.random() * (TOTAL_STARWARS_STARSHIPS_COUNT - 0)) + 0
+
+    swapi.starships({ id: random }).then((result) => {
         // console.log(result);
         callback(result)
     });
@@ -514,7 +542,7 @@ const marvelEventsJob = nodeCron.schedule("0 */12 * * *", () => {
 });
 
 
-const starWarsTweetWorker = async () => {
+const starWarsCharacterTweetWorker = async () => {
 
     generateRandomStarWarsCharacter(async (character) => {
         // console.log(`character name=[${character.name}]`)
@@ -522,7 +550,7 @@ const starWarsTweetWorker = async () => {
         if (character.name) {
 
             let model = generateRandomModel()
-            let prompt = `I want to generate the description of an image of an epic character named ${character.name} and characteristics as ${character}`
+            let prompt = `I want to generate the description of an image of an epic star wars character named ${character.name} and characteristics as ${character}`
             
             // console.log(prompt);
 
@@ -552,13 +580,58 @@ const starWarsTweetWorker = async () => {
 
 const starWarsCharacterJob = nodeCron.schedule("0 */11 * * *", () => {
     try {
-        starWarsTweetWorker()
+        starWarsCharacterTweetWorker()
         console.log(`job=[starWarsCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
     } catch(err) {
         console.log(err)
     }
 });
 
+
+const starWarsStarshipTweetWorker = async () => {
+
+    generateRandomStarWarsStarship(async (starship) => {
+        // console.log(`starship model=[${starship.model}]`)
+
+        if (starship.model && starship.starship_class && starship.manufacturer) {
+
+            let model = generateRandomModel()
+            let prompt = `I want to generate the description of an image of an epic star wars starship model ${starship.model} manufacturer ${starship.manufacturer} and starship_class ${starship.starship_class}`
+            
+            // console.log(prompt);
+
+            let description = await generateDescriptionByPrompt(prompt, model, 50);
+
+            // console.log(description.data.choices[0].text)
+
+            let imageDescription = `An high definition wallpaper image of an star wars starship model ${starship.model} manufacturer ${starship.manufacturer} and starship_class ${starship.starship_class} portrayed as ${description.data.choices[0].text.replace(/[\r\n]/gm, '')}`
+
+            // console.log(imageDescription)
+
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `StarWars starship: ${starship.model} - manufacturer ${starship.manufacturer} and starship_class ${starship.starship_class} desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                starship.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                fixed = fixStarWarsStarshipTweet(tweetText, starship, modelToHashtag.get(model))
+                tweetText = fixed
+            }
+            await tweet(tweetText, url)
+
+        }
+    })
+}
+
+
+const starWarsStarshipTweetWorker = nodeCron.schedule("0 */3 * * * *", () => {
+    try {
+        starWarsTweetWorker()
+        console.log(`job=[starWarsStarshipTweetWorker] timestamp=[${new Date().toLocaleString()}]`);
+    } catch(err) {
+        console.log(err)
+    }
+});
 
   /**
    * /start
