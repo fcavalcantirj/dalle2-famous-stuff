@@ -663,7 +663,7 @@ const starWarsSpeciesTweetWorker = async () => {
             let url = await generateImage(imageDescription);
             // console.log(`url=[${url}]`)
 
-            let tweetText = `StarWars species: ${species.name}, classification ${species.classification}, average height ${species?.average_height} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            let tweetText = `StarWars species: ${species.name}, classification ${species.classification}, average height ${species?.average_height} #dalle2 #dalle #openai #swapiapi`
             if (!twitterText.parseTweet(tweetText).valid) {
                 //doSomething
             }
