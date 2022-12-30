@@ -7,6 +7,7 @@ const request = require('request').defaults({ encoding: null });
 const swapi = require('swapi-node');
 let TOTAL_STARWARS_CHARACTERS_COUNT = 83
 let TOTAL_STARWARS_STARSHIPS_COUNT = 37
+let TOTAL_STARWARS_SPECIES_COUNT = 37
 
 // marvel
 const api = require('marvel-api');
@@ -297,6 +298,20 @@ const generateRandomStarWarsStarship = async (callback) => {
     const random = Math.floor(Math.random() * (TOTAL_STARWARS_STARSHIPS_COUNT - 0)) + 0
 
     swapi.get(`https://swapi.dev/api/starships/${random}/`).then((result) => {
+        // console.log(result);
+        callback(result)
+    }).catch((err) => {
+        console.log(err);
+    });
+
+}
+
+
+const generateRandomStarWarsSpecies = async (callback) => {
+
+    const random = Math.floor(Math.random() * (TOTAL_STARWARS_SPECIES_COUNT - 0)) + 0
+
+    swapi.get(`https://swapi.dev/api/species/${random}/`).then((result) => {
         // console.log(result);
         callback(result)
     }).catch((err) => {
@@ -626,10 +641,43 @@ const starWarsStarshipTweetWorker = async () => {
 }
 
 
-const starWarsStarshipJob = nodeCron.schedule("0 */12 * * *", () => {
+const starWarsStarshipJob = nodeCron.schedule("0 */24 * * *", () => {
     try {
         starWarsStarshipTweetWorker()
         console.log(`job=[starWarsStarshipJob] timestamp=[${new Date().toLocaleString()}]`);
+    } catch(err) {
+        console.log(err)
+    }
+});
+
+
+const starWarsSpeciesTweetWorker = async () => {
+
+    generateRandomStarWarsSpecies(async (species) => {
+        // console.log(`species name=[${species.name}]`)
+
+        if (species.name && species.classification) {
+
+            let imageDescription = `I want to generate the description of an image of an epic star wars species named ${species.name}, classification ${species.classification}, average height ${species?.average_height}, skin colors ${species?.skin_colors}, hair colors ${species?.hair_colors}, eye colors ${species?.eye_colors}`
+            
+            let url = await generateImage(imageDescription);
+            // console.log(`url=[${url}]`)
+
+            let tweetText = `StarWars species: ${species.name}, classification ${species.classification}, average height ${species?.average_height} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(tweetText).valid) {
+                //doSomething
+            }
+            await tweet(tweetText, url)
+
+        }
+    })
+}
+
+
+const starWarsSpeciesJob = nodeCron.schedule("0 */15 * * * *", () => {
+    try {
+        starWarsSpeciesTweetWorker()
+        console.log(`job=[starWarsSpeciesJob] timestamp=[${new Date().toLocaleString()}]`);
     } catch(err) {
         console.log(err)
     }
