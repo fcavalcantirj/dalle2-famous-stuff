@@ -674,7 +674,7 @@ const starWarsSpeciesTweetWorker = async () => {
 }
 
 
-const starWarsSpeciesJob = nodeCron.schedule("0 */15 * * * *", () => {
+const starWarsSpeciesJob = nodeCron.schedule("0 */24 * * *", () => {
     try {
         starWarsSpeciesTweetWorker()
         console.log(`job=[starWarsSpeciesJob] timestamp=[${new Date().toLocaleString()}]`);
