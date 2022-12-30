@@ -269,7 +269,7 @@ const generateRandomStarWarsCharacter = async (callback) => {
     const random = Math.floor(Math.random() * (TOTAL_STARWARS_CHARACTERS_COUNT - 0)) + 0
 
     swapi.people({ id: random }).then((result) => {
-        console.log(result);
+        // console.log(result);
         callback(result)
     });
 
