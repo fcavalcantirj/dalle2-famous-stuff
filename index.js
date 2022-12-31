@@ -838,8 +838,16 @@ bot.on('message', async (msg) => {
         }
 
         if (username == 'TrippyPlaces' || username == '𒅱𒌓𒉿𒊩𒈹𒌆𒀸 𒅱𒌓𒉿𒊩𒈹𒌆𒀸') {
-            console.log(`prompt not handled. username=[${username}]`)
+            console.log(`prompt not handled. username=[${username}] user blocked`)
+            bot.sendMessage(chatId, `blocked`, {parse_mode: 'HTML'});
             return
+        }
+
+        if (username != 'fcavalcantirj' || username != 'fabiomarinho' || username != 'Rone_araujo'
+            || username != 'marqssss') {
+            console.log(`prompt not handled. username=[${username}]`)
+            bot.sendMessage(chatId, `unlock 50 images by buying me a beer <a href="https://www.buymeacoffee.com/fcavalcantirj"><b>here</b></a>`, {parse_mode: 'HTML'});
+            return;
         }
 
         let searchTerm = msg.text;
