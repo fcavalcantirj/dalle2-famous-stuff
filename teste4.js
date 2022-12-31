@@ -6,8 +6,8 @@ axios({
   method: 'POST',
   headers: {
       'Accept': 'application/json',
-      'Client-ID': '26mxnkb5lhbtznf9f6ryf8ekg2z3jr',
-      'Authorization': 'Bearer n82q61r9ty0mbmimep8iq2w4zmkmtm',
+      'Client-ID': 'from env',
+      'Authorization': 'Bearer from env? see postman',
   },
   data: "fields akas,checksum,country_name,created_at,description,games,gender,mug_shot,name,slug,species,updated_at,url;"
 })
