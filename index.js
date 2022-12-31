@@ -647,7 +647,7 @@ const starWarsStarshipTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let originalTweet = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer} desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            let originalTweet = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer} desc (by AI): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
             if (!twitterText.parseTweet(originalTweet).valid) {
                 let startText = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer}`
                 let hashtags = `#dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
