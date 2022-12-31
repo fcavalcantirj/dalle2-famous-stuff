@@ -843,8 +843,8 @@ bot.on('message', async (msg) => {
             return
         }
 
-        if (username != 'fcavalcantirj' || username != 'fabiomarinho' || username != 'Rone_araujo'
-            || username != 'marqssss') {
+        if (username != 'fcavalcantirj' && username != 'fabiomarinho' && username != 'Rone_araujo'
+            && username != 'marqssss') {
             console.log(`prompt not handled. username=[${username}]`)
             bot.sendMessage(chatId, `unlock 50 images by buying me a beer <a href="https://www.buymeacoffee.com/fcavalcantirj"><b>here</b></a>`, {parse_mode: 'HTML'});
             return;
