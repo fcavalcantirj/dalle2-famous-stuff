@@ -590,7 +590,7 @@ const starWarsCharacterTweetWorker = async () => {
                 let startText = `StarWars character: ${character.name}`
                 let hashtags = `#dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
                 let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
-                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, true, hashtags)
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, false, hashtags)
                 originalTweet = fixedTweet
             }
             await tweet(originalTweet, url)
@@ -616,21 +616,6 @@ const starWarsCharacterJob = nodeCron.schedule("0 */11 * * *", () => {
  * 
  * STARSHIP
  * */
-const fixStarWarsStarshipTweet = (text, starship, hashtags) => {
-    try {
-        let start = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer} #dalle2 #dalle #openai #swapiapi ${hashtags}`
-        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
-        let starshipDescription = new String(starship.description);
-        let fixed = starshipDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer} 'desc (from openapi): ${fixed} #swapiapi #dalle2 #dalle #openai ${hashtags}`
-        let length = fixedTweet.replace(/[^a-z]/gi, "").length
-        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
-        return fixedTweet;
-    } catch(err) {
-        console.log(err)
-        return text
-    }
-}
 const generateRandomStarWarsStarship = async (callback) => {
 
     const random = Math.floor(Math.random() * (TOTAL_STARWARS_STARSHIPS_COUNT - 0)) + 0
@@ -662,13 +647,15 @@ const starWarsStarshipTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer} desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                starship.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
-                fixed = fixStarWarsStarshipTweet(tweetText, starship, modelToHashtag.get(model))
-                tweetText = fixed
+            let originalTweet = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer} desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `StarWars starship: ${starship.name} - model ${starship.model} and manufacturer ${starship.manufacturer}`
+                let hashtags = `#dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+                let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, false, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
         }
     })
 }
@@ -690,21 +677,6 @@ const starWarsStarshipJob = nodeCron.schedule("0 */24 * * *", () => {
  * 
  * SPECIES
  * */
-const fixStarWarsSpeciesTweet = (text, species, hashtags) => {
-    try {
-        let start = `StarWars species: ${species.name} - classification ${species?.classification} #dalle2 #dalle #openai #swapiapi ${hashtags}`
-        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
-        let speciesDescription = new String(starship.description);
-        let fixed = speciesDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `StarWars species: ${species.name} - classification ${species?.classification} desc (from openapi): ${fixed} #swapiapi #dalle2 #dalle #openai ${hashtags}`
-        let length = fixedTweet.replace(/[^a-z]/gi, "").length
-        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
-        return fixedTweet;
-    } catch(err) {
-        console.log(err)
-        return text
-    }
-}
 const generateRandomStarWarsSpecies = async (callback) => {
 
     const random = Math.floor(Math.random() * (TOTAL_STARWARS_SPECIES_COUNT - 0)) + 0
@@ -735,13 +707,15 @@ const starWarsSpeciesTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `StarWars species: ${species.name} - classification ${species?.classification} desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                species.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
-                fixed = fixStarWarsSpeciesTweet(tweetText, species, modelToHashtag.get(model))
-                tweetText = fixed
+            let originalTweet = `StarWars species: ${species.name} - classification ${species?.classification} desc (by AI): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `StarWars species: ${species.name} - classification ${species?.classification}`
+                let hashtags = `#dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+                let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, false, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
         }
     })
 }
