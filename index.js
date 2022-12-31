@@ -84,6 +84,38 @@ const tweet = async (textToTweet, imageUrl) => {
         }
     });
 }
+const fixTweetDescription = (originalTweet, fixedLenghText, variableDescription, originalDescription, hashtags) => {
+    try {
+        // fixedLenghText + variableDescription + hashtags = 280 chars
+        /**
+         * idea is to get the lenght of fixedLenghText + hashtags
+         * and use the remaining chars to crop description with '...'
+         * 
+         * */
+        let mainLengh = `${fixedLenghText} ${hashtags}`.length
+        let delta = (true === originalDescription ? 273 : 265) - mainLengh; // because of desc | desc (by AI) and spaces
+        if (delta < 0) {
+            //doSomething
+            console.log(`@@@@@@@@@@@@@@@@@@ delta < 0; delta=[${delta}]`)
+            return originalTweet
+        }
+        let fixedDescription = variableDescription.substring(0, (delta - 3)) + '...'
+        let wholeTweet = `${fixedLenghText} ${(true === originalDescription ? 'desc:' : 'desc (by AI):')} ${fixedDescription} ${hashtags}`
+        if (twitterText.parseTweet(wholeTweet).valid) {
+            let length = wholeTweet.length
+            console.log(`fixed tweet=[${wholeTweet}] length=[${length}]`)
+            return wholeTweet;
+        } else {
+            //doSomething
+            let length = wholeTweet.length
+            console.log(`@@@@@@@@@@@@@@@@@@ NOT VALID tweet=[${wholeTweet}] length=[${length}]`)
+            return originalTweet
+        }
+    } catch(err) {
+        console.log(err)
+        return originalTweet
+    }
+}
 // END TWITTER
 
 
@@ -173,7 +205,7 @@ const getBookAuthor = (book) => {
     return 'unknown'
    } 
 }
-const fixTweet = (text, book, hashtags) => {
+const fixGuttenbergTweet = (text, book, hashtags) => {
     try {
         let suffix = `- author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${hashtags}`
         let delta = 240 - suffix.replace(/[^a-z]/gi, "").length;
@@ -235,7 +267,7 @@ const guttenberbTweetWorker = async () => {
 
     let tweetText = `Book: ${book.title} - author: ${getBookAuthor(book)} - birthYear: ${getAuthorBirthYear(book)} #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
     if (!twitterText.parseTweet(tweetText).valid) {
-        fixed = fixTweet(tweetText, book, modelToHashtag.get(model))
+        fixed = fixGuttenbergTweet(tweetText, book, modelToHashtag.get(model))
         tweetText = fixed
     }
     await tweet(tweetText, url)
@@ -283,21 +315,6 @@ const guttenberbTweetWorker = async () => {
  * 
  * STORIES
  * */
-const fixMarvelStoryTweet = (text, story, hashtags) => {
-    try {
-        let start = `Marvel story: ${story.title} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
-        let storyDescription = new String(story.description);
-        let fixed = storyDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `Marvel story: ${story.title} - ${(story.openApiDescription ? 'desc (from openapi): ' : 'desc: ')} ${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let length = fixedTweet.replace(/[^a-z]/gi, "").length
-        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
-        return fixedTweet;
-    } catch(err) {
-        console.log(err)
-        return text
-    }
-}
 const generateRandomMarvelStory = async (callback) => {
 
     const random = Math.floor(Math.random() * (TOTAL_MARVEL_STORY_COUNT - 0)) + 0
@@ -325,13 +342,15 @@ const marvelStoriesTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `Marvel story: ${story.title} - desc: ${story.description} #marvel #marvelapi #dalle2 #dalle #openai`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                story.openApiDescription = false
-                fixed = fixMarvelStoryTweet(tweetText, story, '#storyapi')
-                tweetText = fixed
+            let originalTweet = `Marvel story: ${story.title} desc: ${story.description} #marvel #marvelapi #dalle2 #dalle #openai`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `Marvel story: ${story.title}`
+                let hashtags = `#marvel #marvelapi #dalle2 #dalle #openai`
+                let variableDescription = story.description
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, true, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
 
         } else {
 
@@ -348,14 +367,15 @@ const marvelStoriesTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `Marvel story: ${story.title} - desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                story.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
-                story.openApiDescription = true
-                fixed = fixMarvelStoryTweet(tweetText, story, modelToHashtag.get(model))
-                tweetText = fixed
+            let originalTweet = `Marvel story: ${story.title} desc (by AI): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `Marvel story: ${story.title}`
+                let hashtags = `#marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+                let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, false, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
         }
     })
 }
@@ -379,21 +399,6 @@ const marvelStoriesJob = nodeCron.schedule("0 */6 * * *", () => {
  * 
  * EVENTS
  * */
-const fixMarvelEventTweet = (text, event, hashtags) => {
-    try {
-        let start = `Marvel event: ${event.title} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
-        let eventDescription = new String(event.description);
-        let fixed = eventDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `Marvel event: ${event.title} - desc: ${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let length = fixedTweet.replace(/[^a-z]/gi, "").length
-        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
-        return fixedTweet;
-    } catch(err) {
-        console.log(err)
-        return text
-    }
-}
 const generateRandomMarvelEvent = async (callback) => {
 
     const random = Math.floor(Math.random() * (TOTAL_MARVEL_EVENT_COUNT - 0)) + 0
@@ -421,12 +426,15 @@ const marvelEventsTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `Marvel event: ${event.title} - desc: ${event.description} #marvel #marvelapi #dalle2 #dalle #openai`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                fixed = fixMarvelEventTweet(tweetText, event, '#storyapi')
-                tweetText = fixed
+            let originalTweet = `Marvel event: ${event.title} desc: ${event.description} #marvel #marvelapi #dalle2 #dalle #openai`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `Marvel event: ${event.title}`
+                let hashtags = `#marvel #marvelapi #dalle2 #dalle #openai`
+                let variableDescription = event.description
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, true, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
         }
     })
 }
@@ -448,21 +456,6 @@ const marvelEventsJob = nodeCron.schedule("0 */12 * * *", () => {
  * 
  * CHARACTER
  * */
-const fixMarvelCharacterTweet = (text, character, hashtags) => {
-    try {
-        let start = `Marvel character: ${character.name} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let delta = 230 - start.replace(/[^a-z]/gi, "").length;
-        let characterDescription = new String(character.description);
-        let fixed = characterDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `Marvel character: ${character.name} - ${(character.openApiDescription ? 'desc (from openapi): ' : 'desc: ')} ${fixed} #marvel #marvelapi #dalle2 #dalle #openai ${hashtags}`
-        let length = fixedTweet.replace(/[^a-z]/gi, "").length
-        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
-        return fixedTweet;
-    } catch(err) {
-        console.log(err)
-        return text
-    }
-}
 const generateRandomMarvelCharacter = async (callback) => {
 
     const random = Math.floor(Math.random() * (TOTAL_MARVEL_CHARACTERS_COUNT - 0)) + 0
@@ -490,13 +483,15 @@ const marvelCharacterTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `Marvel character: ${character.name} - desc: ${character.description} #marvel #marvelapi #dalle2 #dalle #openai`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                character.openApiDescription = false
-                fixed = fixMarvelCharacterTweet(tweetText, character, '#characterapi')
-                tweetText = fixed
+            let originalTweet = `Marvel character: ${character.name} desc: ${character.description} #marvel #marvelapi #dalle2 #dalle #openai`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `Marvel character: ${character.name}`
+                let hashtags = `#marvel #marvelapi #dalle2 #dalle #openai`
+                let variableDescription = character.description
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, true, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
 
         } else {
 
@@ -513,14 +508,15 @@ const marvelCharacterTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `Marvel character: ${character.name} - desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                character.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
-                character.openApiDescription = true
-                fixed = fixMarvelCharacterTweet(tweetText, character, modelToHashtag.get(model))
-                tweetText = fixed
+            let originalTweet = `Marvel character: ${character.name} desc (by AI): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `Marvel event: ${event.title}`
+                let hashtags = `#marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
+                let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, false, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
         }
     })
 }
@@ -561,21 +557,6 @@ const marvelCharacterJob = nodeCron.schedule("0 */8 * * *", () => {
  * 
  * CHARACTER
  * */
-const fixStarWarsCharacterTweet = (text, character, hashtags) => {
-    try {
-        let start = `StarWars character: ${character.name} #dalle2 #dalle #openai #swapiapi ${hashtags}`
-        let delta = 220 - start.replace(/[^a-z]/gi, "").length;
-        let characterDescription = new String(character.description);
-        let fixed = characterDescription.substring(0, (delta - 3)) + '...'
-        let fixedTweet = `StarWars character: ${character.name} - 'desc (from openapi): ${fixed} #swapiapi #dalle2 #dalle #openai ${hashtags}`
-        let length = fixedTweet.replace(/[^a-z]/gi, "").length
-        console.log(`fixed tweet=[${fixedTweet}] length=[${length}]`)
-        return fixedTweet;
-    } catch(err) {
-        console.log(err)
-        return text
-    }
-}
 const generateRandomStarWarsCharacter = async (callback) => {
 
     const random = Math.floor(Math.random() * (TOTAL_STARWARS_CHARACTERS_COUNT - 0)) + 0
@@ -604,13 +585,15 @@ const starWarsCharacterTweetWorker = async () => {
             // console.log(`url=[${url}]`)
 
 
-            let tweetText = `StarWars character: ${character.name} - desc (from openapi): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
-            if (!twitterText.parseTweet(tweetText).valid) {
-                character.description = description.data.choices[0].text.replace(/[\r\n]/gm, '')
-                fixed = fixStarWarsCharacterTweet(tweetText, character, modelToHashtag.get(model))
-                tweetText = fixed
+            let originalTweet = `StarWars character: ${character.name} desc (by AI): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+            if (!twitterText.parseTweet(originalTweet).valid) {
+                let startText = `StarWars character: ${character.name}`
+                let hashtags = `#dalle2 #dalle #openai #swapiapi ${modelToHashtag.get(model)}`
+                let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
+                let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, true, hashtags)
+                originalTweet = fixedTweet
             }
-            await tweet(tweetText, url)
+            await tweet(originalTweet, url)
         }
     })
 }
