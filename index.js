@@ -510,7 +510,7 @@ const marvelCharacterTweetWorker = async () => {
 
             let originalTweet = `Marvel character: ${character.name} desc (by AI): ${description.data.choices[0].text.replace(/[\r\n]/gm, '')} #marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
             if (!twitterText.parseTweet(originalTweet).valid) {
-                let startText = `Marvel event: ${event.title}`
+                let startText = `Marvel character: ${character.name}`
                 let hashtags = `#marvel #marvelapi #dalle2 #dalle #openai ${modelToHashtag.get(model)}`
                 let variableDescription = description.data.choices[0].text.replace(/[\r\n]/gm, '')
                 let fixedTweet = fixTweetDescription(originalTweet, startText, variableDescription, false, hashtags)
