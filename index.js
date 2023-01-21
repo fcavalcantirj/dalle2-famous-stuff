@@ -379,7 +379,7 @@ const marvelStoriesTweetWorker = async () => {
         }
     })
 }
-const marvelStoriesJob = nodeCron.schedule("0 */6 * * *", () => {
+const marvelStoriesJob = nodeCron.schedule("0 */4 * * *", () => {
     try {
         marvelStoriesTweetWorker()
         console.log(`job=[marvelStoriesJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -438,7 +438,7 @@ const marvelEventsTweetWorker = async () => {
         }
     })
 }
-const marvelEventsJob = nodeCron.schedule("0 */12 * * *", () => {
+const marvelEventsJob = nodeCron.schedule("0 */10 * * *", () => {
     try {
         marvelEventsTweetWorker()
         console.log(`job=[marvelEventsJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -520,7 +520,7 @@ const marvelCharacterTweetWorker = async () => {
         }
     })
 }
-const marvelCharacterJob = nodeCron.schedule("0 */8 * * *", () => {
+const marvelCharacterJob = nodeCron.schedule("0 */6 * * *", () => {
     try {
         marvelCharacterTweetWorker()
         console.log(`job=[marvelCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -597,7 +597,7 @@ const starWarsCharacterTweetWorker = async () => {
         }
     })
 }
-const starWarsCharacterJob = nodeCron.schedule("0 */11 * * *", () => {
+const starWarsCharacterJob = nodeCron.schedule("0 */9 * * *", () => {
     try {
         starWarsCharacterTweetWorker()
         console.log(`job=[starWarsCharacterJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -659,7 +659,7 @@ const starWarsStarshipTweetWorker = async () => {
         }
     })
 }
-const starWarsStarshipJob = nodeCron.schedule("0 */24 * * *", () => {
+const starWarsStarshipJob = nodeCron.schedule("0 */22 * * *", () => {
     try {
         starWarsStarshipTweetWorker()
         console.log(`job=[starWarsStarshipJob] timestamp=[${new Date().toLocaleString()}]`);
@@ -719,7 +719,7 @@ const starWarsSpeciesTweetWorker = async () => {
         }
     })
 }
-const starWarsSpeciesJob = nodeCron.schedule("0 */24 * * *", () => {
+const starWarsSpeciesJob = nodeCron.schedule("0 */22 * * *", () => {
     try {
         starWarsSpeciesTweetWorker()
         console.log(`job=[starWarsSpeciesJob] timestamp=[${new Date().toLocaleString()}]`);
